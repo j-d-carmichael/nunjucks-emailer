@@ -15,9 +15,7 @@ class Emailer {
       throw new Error('You must first call EmailerSetup before using the Emailer class.');
     }
     const config = global.OPENAPI_NODEGEN_EMAILER_SETTINGS;
-    const htmlTpl = emailerSend.tplRelativePath ?
-      (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.html.njk'))).toString() :
-      emailerSend.tplHtmlString;
+    const htmlTpl = emailerSend.tplHtmlString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.html.njk'))).toString();
     let HTMLString = this.renderTemplate(htmlTpl, emailerSend.tplObject);
 
     if (config.makeCssInline) {
@@ -25,9 +23,7 @@ class Emailer {
       HTMLString = await inlineCss(HTMLString, cssInlineOpts);
     }
 
-    const txtTpl = emailerSend.tplRelativePath ?
-      (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString() :
-      emailerSend.tplTxtString;
+    const txtTpl = emailerSend.tplTxtString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString();
     const TxtString = this.renderTemplate(txtTpl, emailerSend.tplObject);
 
     // try and get the subject line from the HTML email template
