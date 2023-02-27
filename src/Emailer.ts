@@ -15,27 +15,30 @@ class Emailer {
       throw new Error('You must first call EmailerSetup before using the Emailer class.');
     }
     const config = global.OPENAPI_NODEGEN_EMAILER_SETTINGS;
-    let HTMLString = await this.renderTemplate(
-      path.join(config.tplPath, emailerSend.tplRelativePath + '.html.njk'),
-      emailerSend.tplObject,
-    );
-    // try and get the subject line from the HTML email template
-    const subjectFromHtmlString = getSubjectFromHtml(HTMLString);
+    const htmlTpl = emailerSend.tplRelativePath ?
+      (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.html.njk'))).toString() :
+      emailerSend.tplHtmlString;
+    let HTMLString = this.renderTemplate(htmlTpl, emailerSend.tplObject);
 
     if (config.makeCssInline) {
       const cssInlineOpts = config.makeCssInlineOptions || {};
       HTMLString = await inlineCss(HTMLString, cssInlineOpts);
     }
 
+    const txtTpl = emailerSend.tplRelativePath ?
+      (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString() :
+      emailerSend.tplTxtString;
+    const TxtString = this.renderTemplate(txtTpl, emailerSend.tplObject);
+
+    // try and get the subject line from the HTML email template
+    const subjectFromHtmlString = getSubjectFromHtml(HTMLString);
+
     // prep the message object
     const messageObject = {
-      from: emailerSend.from || global.OPENAPI_NODEGEN_EMAILER_SETTINGS.fallbackFrom,
+      from: emailerSend.from || config.fallbackFrom,
       html: HTMLString,
-      subject: emailerSend.subject || subjectFromHtmlString || global.OPENAPI_NODEGEN_EMAILER_SETTINGS.fallbackSubject,
-      text: await this.renderTemplate(
-        path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, emailerSend.tplRelativePath + '.txt.njk'),
-        emailerSend.tplObject,
-      ),
+      subject: emailerSend.subject || subjectFromHtmlString || config.fallbackSubject,
+      text: TxtString,
       to: emailerSend.to,
       tplObject: emailerSend.tplObject || {},
       tplRelativePath: emailerSend.tplRelativePath,
@@ -45,6 +48,8 @@ class Emailer {
 
   getLogFileNames (): Promise<string[]> {
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       fs.readdir(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.logPath, function (err, files) {
         if (err) {
           console.error('Unable to scan directory: ' + global.OPENAPI_NODEGEN_EMAILER_SETTINGS.logPath);
@@ -94,31 +99,22 @@ class Emailer {
     );
   }
 
-  async renderTemplate (fullTemplatePath: string, templateObject?: any): Promise<string> {
-    return new Promise((resolve, reject) => {
-      fs.readFile(fullTemplatePath, 'utf8', (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-        nunjucks.configure({
-          autoescape: false,
-        });
-        const env = new nunjucks.Environment(
-          new nunjucks.FileSystemLoader(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath)
-        );
-        for (const key in global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject) {
-          if (global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject.hasOwnProperty(key)) {
-            env.addGlobal(key, global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject[key]);
-          }
-        }
-        resolve(
-          env.renderString(
-            data,
-            templateObject || {}
-          )
-        );
-      });
+  renderTemplate (templateAsAString: string, templateObject?: any): string {
+    nunjucks.configure({
+      autoescape: false,
     });
+    const env = new nunjucks.Environment(
+      new nunjucks.FileSystemLoader(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath)
+    );
+    for (const key in global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject) {
+      if (global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject.hasOwnProperty(key)) {
+        env.addGlobal(key, global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplGlobalObject[key]);
+      }
+    }
+    return env.renderString(
+      templateAsAString,
+      templateObject || {}
+    );
   }
 
   async sendTo (sendObject: EmailerSendObject): Promise<EmailerSendObjectWithGlobals> {

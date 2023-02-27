@@ -40,65 +40,73 @@ const expectedObject = {
   tplRelativePath: tplRelativePath,
 };
 
+const expectedObjectFromString = Object.assign({}, expectedObject);
+expectedObjectFromString.tplRelativePath = undefined;
+
 afterAll(() => {
   fs.removeSync(logPath);
 });
-it('should throw error if not initialized', async (done) => {
-  try {
-    await Emailer.send({ to, from, subject, tplObject, tplRelativePath });
-    done('Should have thrown an error!');
-  } catch (e) {
-    done();
-  }
+it('should throw error if not initialized', (done) => {
+  Emailer.send({ to, from, subject, tplObject, tplRelativePath })
+    .then(() => {
+      done('Should have thrown an error');
+    })
+    .catch(() => {
+      done();
+    });
 });
-it('should initialise correctly', async (done) => {
-  try {
-    emailerSetup({
-      sendType: EmailerSendTypes.return,
-      fallbackFrom,
-      fallbackSubject
-    });
-    emailerSetupSync({
-      sendType: EmailerSendTypes.return,
-      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
-      logPath: logPath,
-      fallbackFrom,
-      fallbackSubject,
-      templateGlobalObject,
-    });
-    await emailerSetupAsync({
-      sendType: EmailerSendTypes.return,
-      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
-      logPath: logPath,
-      fallbackFrom,
-      fallbackSubject,
-      templateGlobalObject,
-    });
-    done();
-  } catch (e) {
-    done(e);
-  }
+it('should initialise correctly', async () => {
+
+  emailerSetup({
+    sendType: EmailerSendTypes.return,
+    fallbackFrom,
+    fallbackSubject
+  });
+  emailerSetupSync({
+    sendType: EmailerSendTypes.return,
+    templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+    logPath: logPath,
+    fallbackFrom,
+    fallbackSubject,
+    templateGlobalObject,
+  });
+  await emailerSetupAsync({
+    sendType: EmailerSendTypes.return,
+    templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+    logPath: logPath,
+    fallbackFrom,
+    fallbackSubject,
+    templateGlobalObject,
+  });
+  expect(1).toBe(1);
 });
 
 it('extract the subject text from a html string', async () => {
-  const HTMLString = await Emailer.renderTemplate(
-    path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'subjectTest.html.njk'),
-    {},
-  );
-  expect(getSubjectFromHtml(HTMLString)).toBe('subject text')
+  const tpl = (await fs.readFile(path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'subjectTest.html.njk'))).toString();
+  const HTMLString = Emailer.renderTemplate(tpl, {});
+  expect(getSubjectFromHtml(HTMLString)).toBe('subject text');
 });
 
 it('extract the subject text from a html but it should be undefined', async () => {
-  const HTMLString = await Emailer.renderTemplate(
-    path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'welcome.html.njk'),
-    {},
-  );
-  expect(getSubjectFromHtml(HTMLString)).toBe(undefined)
+  const tpl = (await fs.readFile(path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'welcome.html.njk'))).toString();
+  const HTMLString = Emailer.renderTemplate(tpl, {});
+  expect(getSubjectFromHtml(HTMLString)).toBe(undefined);
 });
 
 it('should return the object', async () => {
   const sentObject = await Emailer.send({ to, from, subject, tplObject, tplRelativePath });
   expect(sentObject).toEqual(expectedObject);
+});
+
+it('should return the object when the txt and html tpl string is passed', async () => {
+  const htmlTpl = (await fs.readFile(path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'welcome.html.njk'))).toString();
+  const txtTpl = (await fs.readFile(path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.tplPath, 'welcome.txt.njk'))).toString();
+  const sentObject = await Emailer.send({
+    to, from, subject, tplObject,
+    tplHtmlString: htmlTpl,
+    tplTxtString: txtTpl
+  });
+  expect(sentObject).toEqual(expectedObjectFromString);
 });
 
 it('should return the object but with fallbackFrom email', async () => {
@@ -108,13 +116,14 @@ it('should return the object but with fallbackFrom email', async () => {
   );
 });
 
-it('should throw error for wrong tpl name', async (done) => {
-  try {
-    await Emailer.send({ to, from, subject, tplObject, tplRelativePath: 'doesnotexist' });
-    done('Should have thrown an error on wrong tpl name');
-  } catch (e) {
-    done();
-  }
+it('should throw error for wrong tpl name', (done) => {
+  Emailer.send({ to, from, subject, tplObject, tplRelativePath: 'doesnotexist' })
+    .then(() => {
+      done('Should have thrown an error');
+    })
+    .catch(() => {
+      done();
+    });
 });
 
 it('should calculate the correct file path', () => {
@@ -138,7 +147,7 @@ it('should write to file', async () => {
   expect(await Emailer.getLatestLogFileData()).toEqual(expectedObject);
 });
 
-it('should throw an error on bad log directory', async (done) => {
+it('should throw an error on bad log directory', (done) => {
   emailerSetupSync({
     sendType: EmailerSendTypes.file,
     templatePath: '/',
@@ -147,12 +156,14 @@ it('should throw an error on bad log directory', async (done) => {
     fallbackSubject,
     templateGlobalObject,
   });
-  try {
-    await Emailer.send({ to, from, subject, tplObject, tplRelativePath });
-    done('Should have thrown an error for unwritable directory, either this is running as root or there is an error in the code');
-  } catch (e) {
-    done();
-  }
+
+  Emailer.send({ to, from, subject, tplObject, tplRelativePath })
+    .then(() => {
+      done('Should have thrown an error for unwritable directory, either this is running as root or there is an error in the code');
+    })
+    .catch(() => {
+      done();
+    });
 });
 
 it('Should write file to disk', async () => {
@@ -168,17 +179,16 @@ it('Should write file to disk', async () => {
   expect(fs.existsSync(logFile.loggedFilePath)).toBe(true);
 });
 
-it('should throw error and not be able a non json file', async (done) => {
+it('should throw error and not be able a non json file', (done) => {
   fs.writeFileSync(
     path.join(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.logPath, '999999999999.json'),
     'this is not json',
   );
-  try {
-    await Emailer.getLatestLogFileData();
-    done('Should have thrown an error');
-  } catch (e) {
+  Emailer.getLatestLogFileData().then(() => {
+    done('should have thrown an error');
+  }).catch(() => {
     done();
-  }
+  });
 });
 
 it('We should currently have 3 files written to disc', async () => {
@@ -190,24 +200,27 @@ it('should be able to empty log directory', async () => {
   expect((await Emailer.getLogFileNames()).length).toBe(0);
 });
 
-it('should throw error and not be able to scan non-existent directory', async (done) => {
+it('should throw error and not be able to scan non-existent directory', (done) => {
   global.OPENAPI_NODEGEN_EMAILER_SETTINGS.logPath = '/non-existent-path';
-  try {
-    await Emailer.getLogFileNames();
-    done('Should have thrown an error');
-  } catch (e) {
+
+  Emailer.getLogFileNames()
+    .then(() => {
+      done('should error');
+    }).catch(() => {
     done();
-  }
+  });
 });
 
-it('should throw error and not be empty non-existent directory', async (done) => {
+it('should throw error and not be empty non-existent directory', (done) => {
   global.OPENAPI_NODEGEN_EMAILER_SETTINGS.logPath = '/non-existent-path';
-  try {
-    await Emailer.removeAllEmailJsonLogFiles();
-    done('Should have thrown an error');
-  } catch (e) {
-    done();
-  }
+
+  Emailer.removeAllEmailJsonLogFiles()
+    .then(() => {
+      done('Should have thrown an error');
+    })
+    .catch(() => {
+      done();
+    });
 });
 
 it('should console log', async () => {
@@ -224,7 +237,7 @@ it('should console log', async () => {
   expect((await Emailer.getLogFileNames()).length).toBe(0);
 });
 
-it('should console error as no api key set', async (done) => {
+it('should console error as no api key set', (done) => {
   emailerSetupSync({
     sendType: EmailerSendTypes.sendgrid,
     templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
@@ -233,10 +246,10 @@ it('should console error as no api key set', async (done) => {
     fallbackSubject,
     templateGlobalObject,
   });
-  try {
-    await Emailer.send({ to, from, subject, tplRelativePath });
+
+  Emailer.send({ to, from, subject, tplRelativePath }).then(() => {
     done('should have thrown error as sendgrid not setup');
-  } catch (e) {
+  }).catch(() => {
     done();
-  }
+  });
 });

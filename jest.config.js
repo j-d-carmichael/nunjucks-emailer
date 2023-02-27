@@ -6,20 +6,32 @@ module.exports = {
     'ts',
     'tsx'
   ],
-
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.{js,ts}'],
+  collectCoverageFrom: [
+    'src/src/**/*.{js,ts}',
+  ],
   coverageDirectory: 'coverage',
 
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
   },
-  transformIgnorePatterns: ['/node_modules/'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
-  },
+  transformIgnorePatterns: [
+    '/node_modules/',
+    '/build/'
+  ],
+
   testMatch: [
     '**/__tests__/*.spec.ts',
   ],
-  testURL: 'http://localhost/',
+
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/build/',
+  ],
+
+  testEnvironment: 'node',
+
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1'
+  },
 }

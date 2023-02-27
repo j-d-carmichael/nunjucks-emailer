@@ -32,7 +32,7 @@ module.exports = {
     ],
     quotes: ['error', 'single', { avoidEscape: true }],
     curly: ['error', 'all'],
-    'max-lines-per-function': ['error', 40],
+    'max-lines-per-function': ['error', 50],
     'deprecate/function': 2,
     'deprecate/member-expression': 2,
     'deprecate/import': 2,

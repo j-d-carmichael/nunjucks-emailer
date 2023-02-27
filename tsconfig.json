@@ -16,12 +16,6 @@
         "src/*"
       ]
     },
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "exclude": ["*"]
-      }
-    ]
   },
   "exclude": [
     "package.json",
