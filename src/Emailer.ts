@@ -8,6 +8,7 @@ import { EmailerSendTypes } from '@/enums/EmailerSendTypes';
 import EmailerSend from '@/interfaces/EmailerSend';
 import EmailerSendObjectWithGlobals from '@/interfaces/EmailerSendObjectWithGlobals';
 import getSubjectFromHtml from '@/utils/getSubjectFromHtml';
+import convertHtmlToTxt from '@/utils/convertHtmlToTxt';
 
 class Emailer {
   async send (emailerSend: EmailerSend): Promise<EmailerSendObjectWithGlobals> {
@@ -23,8 +24,13 @@ class Emailer {
       HTMLString = await inlineCss(HTMLString, cssInlineOpts);
     }
 
-    const txtTpl = emailerSend.tplTxtString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString();
-    const TxtString = this.renderTemplate(txtTpl, emailerSend.tplObject);
+    let txtString: string;
+    if (emailerSend.autoTxtFromHtml) {
+      txtString = convertHtmlToTxt(HTMLString);
+    } else {
+      const txtTpl = emailerSend.tplTxtString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString();
+      txtString = this.renderTemplate(txtTpl, emailerSend.tplObject);
+    }
 
     // try and get the subject line from the HTML email template
     const subjectFromHtmlString = getSubjectFromHtml(HTMLString);
@@ -34,7 +40,7 @@ class Emailer {
       from: emailerSend.from || config.fallbackFrom,
       html: HTMLString,
       subject: emailerSend.subject || subjectFromHtmlString || config.fallbackSubject,
-      text: TxtString,
+      text: txtString,
       to: emailerSend.to,
       tplObject: emailerSend.tplObject || {},
       tplRelativePath: emailerSend.tplRelativePath,

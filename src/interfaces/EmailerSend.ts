@@ -5,6 +5,7 @@ export default interface EmailerSend {
   tplRelativePath?: string;
   tplHtmlString?: string;
   tplTxtString?: string;
+  autoTxtFromHtml?: boolean;
   from?: EmailData;
   subject?: string;
   tplObject?: any;

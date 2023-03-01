@@ -1,6 +1,6 @@
 {
   "name": "nunjucks-emailer",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Simple email sender utilizing nunjucks templates for html and txt with tpl helpers",
   "licence": "MIT",
   "main": "./build/index.js",
@@ -29,15 +29,17 @@
   ],
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
+    "@types/inline-css": "^3.0.1",
     "cheerio": "^1.0.0-rc.12",
     "fs-extra": "^11.1.0",
+    "html-to-text": "^9.0.4",
     "inline-css": "^4.0.2",
-    "@types/inline-css": "^3.0.1",
     "nunjucks": "^3.2.3"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.31",
     "@types/fs-extra": "^11.0.1",
+    "@types/html-to-text": "^9.0.0",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.2",
     "@types/nunjucks": "^3.2.2",
