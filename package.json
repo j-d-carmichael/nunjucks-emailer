@@ -1,6 +1,6 @@
 {
   "name": "nunjucks-emailer",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Simple email sender utilizing nunjucks templates for html and txt with tpl helpers",
   "licence": "MIT",
   "main": "./build/index.js",

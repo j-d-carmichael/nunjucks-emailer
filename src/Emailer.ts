@@ -144,7 +144,7 @@ class Emailer {
         if (err) {
           return reject(err);
         }
-        fs.writeFile(filePath, JSON.stringify(object), 'utf8', (err) => {
+        fs.writeFile(filePath, JSON.stringify(object, null, 2), 'utf8', (err) => {
           if (err) {
             return reject(err);
           }
