@@ -140,11 +140,16 @@ class Emailer {
   writeFile (tplRelativePath: string, object: EmailerSendObjectWithGlobals): Promise<string> {
     return new Promise((resolve, reject) => {
       const filePath = this.calculateLogFilePath(tplRelativePath);
-      fs.writeFile(filePath, JSON.stringify(object), 'utf8', (err) => {
+      fs.ensureFile(filePath, (err) => {
         if (err) {
           return reject(err);
         }
-        return resolve(filePath);
+        fs.writeFile(filePath, JSON.stringify(object), 'utf8', (err) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(filePath);
+        });
       });
     });
   }
