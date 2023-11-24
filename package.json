@@ -1,21 +1,19 @@
 {
   "name": "nunjucks-emailer",
-  "version": "2.2.3",
-  "description": "Simple email sender utilizing nunjucks templates for html and txt with tpl helpers",
+  "version": "3.0.0",
+  "description": "Simple email sender utilizing nunjucks templates for html and txt with tpl helpers, send via sendgrid or brevo, or write to disk",
   "licence": "MIT",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
+    "build": "rm -fR ./build && tsc -d --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build:tocs": "npx doctoc .",
     "install:githooks": "cp ./githooks/* .git/hooks",
     "test": "npm run lint && npm run test:unit",
     "test:unit": "jest",
     "test:unit:single": "jest --collect-coverage false",
     "lint": "eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "build:tocs": "npx doctoc .",
-    "build": "rm -fR ./build && tsc -d --project tsconfig.json && tsc-alias -p tsconfig.json",
-    "build:watch": "ttsc --watch -p .",
-    "start": "node cli.js",
     "prepublishOnly": "npm run lint && npm run build && npm run test"
   },
   "repository": {
@@ -25,27 +23,27 @@
   "keywords": [
     "nunjucks",
     "email",
-    "sendgrid"
+    "sendgrid",
+    "brevo"
   ],
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
-    "@types/inline-css": "^3.0.1",
+    "@types/inline-css": "^3.0.3",
     "cheerio": "^1.0.0-rc.12",
-    "fs-extra": "^11.1.0",
-    "html-to-text": "^9.0.4",
+    "fs-extra": "^11.1.1",
+    "html-to-text": "^9.0.5",
     "inline-css": "^4.0.2",
-    "nunjucks": "^3.2.3"
+    "nunjucks": "^3.2.4"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.31",
-    "@types/fs-extra": "^11.0.1",
-    "@types/html-to-text": "^9.0.0",
-    "@types/jest": "^29.4.0",
+    "@types/cheerio": "^0.22.35",
+    "@types/fs-extra": "^11.0.4",
+    "@types/html-to-text": "^9.0.4",
+    "@types/jest": "^29.5.10",
     "@types/node": "^18.14.2",
-    "@types/nunjucks": "^3.2.2",
+    "@types/nunjucks": "^3.2.6",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
-    "@zerollup/ts-transform-paths": "^1.7.18",
     "eslint": "^8.35.0",
     "eslint-plugin-deprecate": "^0.7.0",
     "hasha": "^5.2.2",

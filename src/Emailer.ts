@@ -133,8 +133,38 @@ class Emailer {
       case EmailerSendTypes.sendgrid:
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
         await sgMail.send(sendObjectWithGlobals);
+        break;
+      case EmailerSendTypes.brevo:
+        await this.sendViaBrevo(sendObjectWithGlobals);
+        break;
     }
     return sendObjectWithGlobals;
+  }
+
+  sendViaBrevo (sendObject: EmailerSendObject) {
+    if (process.env.BREVO_API_KEY) {
+      throw new Error('nunjucks-emailer: You must set the BREVO_API_KEY environment variable to use the Brevo emailer send type.');
+    }
+    const { to, from, subject, html } = sendObject;
+    const toEmail = typeof to === 'string' ? to : to.email;
+    const toName = typeof to === 'string' ? '' : to.name;
+    const fromEmail = typeof from === 'string' ? from : from.email;
+    const fromName = typeof from === 'string' ? '' : from.name;
+
+    return fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: toEmail, name: toName }],
+        subject,
+        htmlContent: html
+      })
+    })
   }
 
   writeFile (tplRelativePath: string, object: EmailerSendObjectWithGlobals): Promise<string> {
