@@ -1,4 +1,5 @@
-export type EmailData = string | { name?: string; email: string; }
+export type EmailObject = { name?: string; email: string; }
+export type EmailData = string | EmailObject
 
 export default interface EmailerSend {
   to: EmailData;

@@ -1,6 +1,7 @@
 import path = require('path');
 import fs from 'fs-extra';
 import sgMail from '@sendgrid/mail';
+import mailchimp from '@mailchimp/mailchimp_transactional';
 import inlineCss from 'inline-css';
 import EmailerSendObject from '@/interfaces/EmailerSendObject';
 import nunjucks from 'nunjucks';
@@ -134,37 +135,44 @@ class Emailer {
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
         await sgMail.send(sendObjectWithGlobals);
         break;
-      case EmailerSendTypes.brevo:
-        await this.sendViaBrevo(sendObjectWithGlobals);
+      case EmailerSendTypes.mailchimp:
+        await this.sendViaMailchimp(sendObject);
         break;
     }
     return sendObjectWithGlobals;
   }
 
-  sendViaBrevo (sendObject: EmailerSendObject) {
-    if (process.env.BREVO_API_KEY) {
-      throw new Error('nunjucks-emailer: You must set the BREVO_API_KEY environment variable to use the Brevo emailer send type.');
+  sendViaMailchimp (sendObject: EmailerSendObject): Promise<any> {
+    const chimp = mailchimp(process.env.MAILCHIMP_API_KEY);
+    let toEmail: string;
+    let toName;
+    if (typeof sendObject.to === 'string') {
+      toEmail = sendObject.to;
+    } else {
+      toEmail = sendObject.to.email;
+      toName = sendObject.to.name;
     }
-    const { to, from, subject, html } = sendObject;
-    const toEmail = typeof to === 'string' ? to : to.email;
-    const toName = typeof to === 'string' ? '' : to.name;
-    const fromEmail = typeof from === 'string' ? from : from.email;
-    const fromName = typeof from === 'string' ? '' : from.name;
-
-    return fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': process.env.BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: { name: fromName, email: fromEmail },
-        to: [{ email: toEmail, name: toName }],
-        subject,
-        htmlContent: html
-      })
-    })
+    let fromEmail: string;
+    let fromName;
+    if (typeof sendObject.to === 'string') {
+      fromEmail = sendObject.to;
+    } else {
+      fromEmail = sendObject.to.email;
+      fromName = sendObject.to.name;
+    }
+    return chimp.messages.send({
+      message: {
+        to: [{
+          email: toEmail,
+          name: toName
+        }],
+        from_email: fromEmail,
+        from_name: fromName,
+        subject: sendObject.subject,
+        html: sendObject.html,
+        text: sendObject.text,
+      }
+    });
   }
 
   writeFile (tplRelativePath: string, object: EmailerSendObjectWithGlobals): Promise<string> {

@@ -1,6 +1,6 @@
 export enum EmailerSendTypes {
   sendgrid = 'SENDGRID',
-  brevo = 'BREVO',
+  mailchimp = 'MAILCHIMP',
   file = 'FILE',
   return = 'RETURN',
   log = 'LOG',
