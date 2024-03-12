@@ -1,59 +1,59 @@
 # nunjucks-emailer
 
-Write email templates with Nunjucks in independent html and text files, send with SendGrid or log to console &/or disk or simply return the email object for other use.
+This package was created explicitly for use with a project that used **Sendgrid** to send emails. It has since been expanded to include a new provider, **MailChimp**. It is not designed as a replacement for nodemailer, it is designed to simplify email templates and sending emials via API. 
 
-Automatically pickout html and text file based on a the fie structure, see below.
-
-> New providers are welcomed, please create a pull request. This was built for use with sendgrid and unit testing domain methods.
-> Additionally, language ability will be coming at some point, unless someone gets a pr in there 1st :) Someting like welcome.en.html.njk
+Send the email, console log the email, output the email to disk or simply return the email JS object... send or test. 
 
 ## How it works
 The email template files are kept in a separate folder to the rest of the source code of your app. Your app uses this package, this package loads templates based on the provided templatePath at setup.
 
-You should write html AND txt versions of each email you want to send, your folder structure might look like this:
+You can write html & txt versions of each email you want to send, however if you only write HTML this package will automatically create a TXT version for you based on the html one when you instruct it to.
 
-![Settings panel](./images/tpl-folder.png)
+## Setup
+At a suitable point in your app, before you send emails, call the setup async or sync function (both do the same thing, sync is easier for unit testing):
 
-You should setup the emailer package with an [EmailerConstructor](https://github.com/johndcarmichael/nunjucks-emailer/blob/master/src/interfaces/EmailerContructor.ts) object which will also `fs.ensureDir[Sync]` the log directory:
-  - `emailerSetupSync(options)`
-  - `emailerSetupAsync(options)`
+The complete interface for the setup options can be seen here: [EmailerContructor.ts](https://github.com/j-d-carmichael/nunjucks-emailer/blob/master/src/interfaces/EmailerContructor.ts)
 
-Lastly, call the [Emailer send method](https://github.com/johndcarmichael/nunjucks-emailer/blob/master/src/Emailer.ts#L9), see below.
-
-## Setup options explained and default values
+Here is a fuller example:
 ```typescript
-export enum EmailerSendTypes {
-  sendgrid = 'SENDGRID', // will only send to sendgrid
-  file = 'FILE', // will only write to disk in the logPath directory provided in the setup options
-  log = 'LOG', // will console.log and log to disk in the logPath directory provided in the setup options
-  return = 'RETURN', // will only return the object that would have otherwise been used in the above
-}
+// Some config object for your project
+import config from '@/config';
 
-export default interface EmailerConstructor {
-  templatePath?: string; // Full path to the folder containing the nunuck email templates, defaults to ./email/templates
-  sendType: EmailerSendTypes; // This dictates what happens when Emailer.send is called values from the above enum
-  logPath?: string; // Dictates where the emails are written to disk: EmailerSendTypes.file, defaults to email/logs
-  fallbackFrom: string; // The from email used when no from email provided, typically a system email address, eg "no-reply@myawesome.app"
-  fallbackSubject: string; // If not subject is provided or found this is the fallback
-}
-```
-
-## Example setup and use
-
-#### setup
-
-Setup the emailer in the entry file eg: [app.ts](https://github.com/acrontum/nunjucks-typescript-server/blob/master/src/app.ts):
-```typescript
-import { emailerSetupSync, EmailerSendTypes } from 'nunjucks-emailer';
-
-emailerSetupSync({ 
-  sendType: EmailerSendTypes.sendgrid,
-  fallbackFrom: 'no-reply@myapp.com',
+// Setup the emailer
+await emailerSetupAsync({
+  templatePath: path.join(
+    process.cwd(), 'email/templates'
+  ),
+  logPath: path.join(
+    process.cwd(), 'email/logs'
+  ),
+  sendType: config.email.mode,
+  fallbackFrom: {
+    email: config.email.fallbackFrom,
+    name: config.appDetails.name
+  },
+  fallbackSubject: config.appDetails.name,
+  makeCssInline: true,
+  makeCssInlineOptions: {
+    url: config.appDetails.frontend.userApp,
+    preserveMediaQueries: true,
+  },
+  templateGlobalObject: {
+    companyName: config.appDetails.name,
+    frontend: config.appDetails.frontend,
+    noReply: config.email.fallbackFrom
+  }
 });
 ```
 
-#### example using tpl files
-Use the emailer in another file in your app now without having to call setup each time, eg in a [domain method](https://github.com/acrontum/nunjucks-typescript-server/blob/master/src/domains/___stub.ts.njk):
+The `sendType` is important. For development of an app you will probably want to log the output. To test, you might want RETURN or FILE and examine the output. For actual sending, pick your provider SENDGRID or MAILCHIMP.
+
+The send types enum can be found here: [EmailerSendTypes.ts](https://github.com/j-d-carmichael/nunjucks-emailer/blob/master/src/enums/EmailerSendTypes.ts)
+
+
+Lastly, call the [Emailer send method](https://github.com/johndcarmichael/nunjucks-emailer/blob/master/src/Emailer.ts#L9), see below.
+
+## Send an email via on file tpl
 ```typescript
 class RegisterDomain {
   public async registerEmailPost (body: RegisterEmailPost, req: any): Promise<Login> {
@@ -65,7 +65,8 @@ class RegisterDomain {
       from: 'bob@bob.com', 
       subject: 'Welcome to the app John!', 
       tplObject: {name: 'John'}, 
-      tplRelativePath: 'welcome'
+      tplRelativePath: 'auth/welcome',
+      autoTxtFromHtml: true
     })
 
     // return 
@@ -73,7 +74,15 @@ class RegisterDomain {
 }
 ```
 
-#### example using tpl as strings passed in
+The above example will:
+- Get the file called "<your email path>/auth/welcome.html.njk"
+- Convert the html email to it's txt counter part
+  - If this was not true, the package would try to load `"<your email path>/auth/welcome.txt.njk"` and fail if not found.
+- Send the email to john@john.com from bob@bob.com
+- Inject the nunjucks vars into the email tpl
+
+
+## Send an email pre-compiled string
 
 You can also pass in the full tpl as strings opposed to the file path:
 ```typescript
@@ -96,30 +105,12 @@ class RegisterDomain {
 }
 ```
 
-#### example using tpl as a string and auto-converting html to txt
-
-If you are happy to just convert the html to txt with html-to-text pass in the option autoTxtFromHtml:
-```typescript
-await Emailer.send({
-  to: 'john@john.com',
-  from: 'bob@bob.com', 
-  subject: 'Welcome to the app John!', 
-  tplObject: {name: 'John'},
-  tplHtmlString: htmlTplString, // grab from a database or file
-  autoTxtFromHtml: true // this will convert the rendered html to txt
-})
-```
-
-The default path for the templates relative to the base of the server:
-```typescript
-path.join(process.cwd(), 'email/templates')
-```
-
 ## Email Subject
 As mentioned above you have the subject fallback should one not be provided to `Emailer.send`, but the subject can also be written into the email HTML template:
 ```
 <p>Welcome {{ name }}</p>
 <p>{{ globalNumber }}</p>
+
 <nunjuck-email-subject text="{{name}} welcome to this app"></nunjuck-email-subject>
 ```
 
@@ -186,9 +177,3 @@ const fileJson = await Emailer.getLatestLogFileData();
 // Will clear directory of json email logs (most helpful when writing tests the app which uses this class)
 await Emailer.removeAllEmailJsonLogFiles();
 ```
-
-
-## Setup sync & async
-Depending on the design of your system, you may be ok or not ok with using a blocking form of the setup emailerSetupSync. Typically if you are only setting up at 1 point in the app this is a not a problem, but if you are dynamically changing on the fly, you should use `emailerSetupAsync`, it does the same job but asynchronously and returns a promise. See the "should initialise correctly" test in "Emailer.spec.ts" file.
-
-

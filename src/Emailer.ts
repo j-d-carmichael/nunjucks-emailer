@@ -154,11 +154,11 @@ class Emailer {
     }
     let fromEmail: string;
     let fromName;
-    if (typeof sendObject.to === 'string') {
-      fromEmail = sendObject.to;
+    if (typeof sendObject.from === 'string') {
+      fromEmail = sendObject.from;
     } else {
-      fromEmail = sendObject.to.email;
-      fromName = sendObject.to.name;
+      fromEmail = sendObject.from.email;
+      fromName = sendObject.from.name;
     }
     return chimp.messages.send({
       message: {
