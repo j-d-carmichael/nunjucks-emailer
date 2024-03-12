@@ -19,11 +19,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
   ],
 
-  // additional function from 3rd parties
-  plugins: [
-    'deprecate',
-  ],
-
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': [
@@ -32,9 +27,6 @@ module.exports = {
     ],
     quotes: ['error', 'single', { avoidEscape: true }],
     curly: ['error', 'all'],
-    'max-lines-per-function': ['error', 50],
-    'deprecate/function': 2,
-    'deprecate/member-expression': 2,
-    'deprecate/import': 2,
+    'max-lines-per-function': ['error', 50]
   },
 };
