@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.0
+- The fallback email and subject in the setup construct is now optional when the sendType is 'return' which allows simple setup when you only want to extract the emails that would be sent
+
 ## 4.0.2
 - Dependency updates
 

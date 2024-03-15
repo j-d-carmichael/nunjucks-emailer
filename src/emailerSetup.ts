@@ -1,4 +1,4 @@
-import EmailerConstructor from '@/interfaces/EmailerContructor';
+import { EmailerConstructor } from '@/interfaces/EmailerContructor';
 import path from 'path';
 
 export default (emailerConstructor: EmailerConstructor): void => {

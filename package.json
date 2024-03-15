@@ -1,6 +1,6 @@
 {
   "name": "nunjucks-emailer",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "Simple email sender utilizing nunjucks templates for html and txt with tpl helpers, send via sendgrid or brevo, or write to disk",
   "licence": "MIT",
   "main": "./build/index.js",
