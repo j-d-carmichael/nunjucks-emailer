@@ -16,14 +16,14 @@ interface BaseEmailerConstructor {
 interface DefaultEmailerConstructor extends BaseEmailerConstructor {
   fallbackFrom: EmailData;
   fallbackSubject: string;
-  sendType: Exclude<EmailerSendTypes, 'return'>;
+  sendType: Exclude<EmailerSendTypes, 'return' | 'log' | 'file'>;
 }
 
 // Interface when sendType is 'return', the fallbacks are optional
 interface ReturnEmailerConstructor extends BaseEmailerConstructor {
   fallbackFrom?: EmailData;
   fallbackSubject?: string;
-  sendType: EmailerSendTypes.return;
+  sendType: EmailerSendTypes.return | EmailerSendTypes.log | EmailerSendTypes.file;
 }
 
 // Conditional type to determine which interface to use based on sendType

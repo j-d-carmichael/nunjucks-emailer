@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.4
+- fix: log and file and return no longer require the fallbackFrom & fallbackSubject
+
 ## 4.1.3
 - fix: txt part render bug
 
