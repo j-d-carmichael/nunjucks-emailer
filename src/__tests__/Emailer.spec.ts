@@ -28,9 +28,9 @@ const templateGlobalObject = new GlobalObject();
 
 const expectedObject = {
   from: from,
-  html: `<p>Welcome John</p>
+  html: `<html><head></head><body><p>Welcome John</p>
 <p>${templateGlobalObject.globalNumber}</p>
-`,
+</body></html>`,
   subject: subject,
   text: `Welcome John
 `,

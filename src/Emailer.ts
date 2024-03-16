@@ -6,42 +6,94 @@ import inlineCss from 'inline-css';
 import EmailerSendObject from '@/interfaces/EmailerSendObject';
 import nunjucks from 'nunjucks';
 import { EmailerSendTypes } from '@/enums/EmailerSendTypes';
-import EmailerSend from '@/interfaces/EmailerSend';
+import EmailerSend, { EmailerRender } from '@/interfaces/EmailerSend';
 import EmailerSendObjectWithGlobals from '@/interfaces/EmailerSendObjectWithGlobals';
 import getSubjectFromHtml from '@/utils/getSubjectFromHtml';
 import convertHtmlToTxt from '@/utils/convertHtmlToTxt';
 
 class Emailer {
+  async renderHtml (emailerRender: EmailerRender) {
+    const config = global.OPENAPI_NODEGEN_EMAILER_SETTINGS;
+    let htmlTpl;
+
+    const htmlTplpath = path.join(config.tplPath, emailerRender.tplRelativePath + '.html.njk');
+    try {
+      htmlTpl = emailerRender.tplHtmlString || (await fs.readFile(htmlTplpath)).toString();
+    } catch (e) {
+      console.error('The template path was not found: ' + htmlTplpath);
+      throw e;
+    }
+
+    let html;
+    try {
+      html = this.renderTemplate(htmlTpl, emailerRender.tplObject);
+    } catch (e) {
+      console.error('There was an error rendering the template: ' + htmlTplpath);
+      throw e;
+    }
+
+    const inputCssInlineOpts = config.makeCssInlineOptions || {};
+    const cssInlineOptions = {
+      url: 'filePath', // this is a required field from inline-css, just ensure the default value is set
+      ...inputCssInlineOpts
+    };
+    try {
+      html = inlineCss(html, cssInlineOptions);
+    } catch (e) {
+      console.error('There was an error converting the CSS to inline CSS. Here were the options used:', cssInlineOptions);
+      throw e;
+    }
+
+    return html;
+  }
+
+  async renderTxt (emailerRender: EmailerRender, html: string) {
+    const config = global.OPENAPI_NODEGEN_EMAILER_SETTINGS;
+    let text: string;
+    if (!emailerRender.autoTxtFromHtml) {
+      let txtTpl;
+      if (emailerRender.tplTxtString) {
+        txtTpl = emailerRender.tplTxtString;
+      } else {
+        const txtFilePath = path.join(config.tplPath, emailerRender.tplRelativePath + '.txt.njk');
+        if (await fs.pathExists(txtFilePath)) {
+          txtTpl = (await fs.readFile(txtFilePath)).toString();
+        }
+      }
+      text = this.renderTemplate(txtTpl, emailerRender.tplObject);
+    }
+    // Fallback, always convert the HTML to TXT part automatically if not manually written
+    if (!text) {
+      text = convertHtmlToTxt(html);
+    }
+    return text;
+  }
+
+  async renderEmailToHtmlAndTxt (emailerRender: EmailerRender): Promise<{ html: string, text: string }> {
+    const html = await this.renderHtml(emailerRender);
+    return {
+      html,
+      text: await this.renderTxt(emailerRender, html)
+    };
+  }
+
   async send (emailerSend: EmailerSend): Promise<EmailerSendObjectWithGlobals> {
     if (!this.hasBeenInitialized()) {
       throw new Error('You must first call EmailerSetup before using the Emailer class.');
     }
+
     const config = global.OPENAPI_NODEGEN_EMAILER_SETTINGS;
-    const htmlTpl = emailerSend.tplHtmlString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.html.njk'))).toString();
-    let HTMLString = this.renderTemplate(htmlTpl, emailerSend.tplObject);
-
-    if (config.makeCssInline) {
-      const cssInlineOpts = config.makeCssInlineOptions || {};
-      HTMLString = await inlineCss(HTMLString, cssInlineOpts);
-    }
-
-    let txtString: string;
-    if (emailerSend.autoTxtFromHtml) {
-      txtString = convertHtmlToTxt(HTMLString);
-    } else {
-      const txtTpl = emailerSend.tplTxtString || (await fs.readFile(path.join(config.tplPath, emailerSend.tplRelativePath + '.txt.njk'))).toString();
-      txtString = this.renderTemplate(txtTpl, emailerSend.tplObject);
-    }
+    const { text, html } = await this.renderEmailToHtmlAndTxt(emailerSend);
 
     // try and get the subject line from the HTML email template
-    const subjectFromHtmlString = getSubjectFromHtml(HTMLString);
+    const subjectFromHtmlString = getSubjectFromHtml(html);
 
     // prep the message object
     const messageObject = {
       from: emailerSend.from || config.fallbackFrom,
-      html: HTMLString,
+      html,
       subject: emailerSend.subject || subjectFromHtmlString || config.fallbackSubject,
-      text: txtString,
+      text,
       to: emailerSend.to,
       tplObject: emailerSend.tplObject || {},
       tplRelativePath: emailerSend.tplRelativePath,

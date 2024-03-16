@@ -35,7 +35,6 @@ await emailerSetupAsync({
   fallbackSubject: config.appDetails.name,
   makeCssInline: true,
   makeCssInlineOptions: {
-    url: config.appDetails.frontend.userApp,
     preserveMediaQueries: true,
   },
   templateGlobalObject: {
