@@ -61,9 +61,12 @@ class Emailer {
           txtTpl = (await fs.readFile(txtFilePath)).toString();
         }
       }
-      text = this.renderTemplate(txtTpl, emailerRender.tplObject);
+      // if we have a txt tpl, render it
+      if (txtTpl) {
+        text = this.renderTemplate(txtTpl, emailerRender.tplObject);
+      }
     }
-    // Fallback, always convert the HTML to TXT part automatically if not manually written
+    // No text... the fallback is to convert the HTML to TXT part automatically if not manually written
     if (!text) {
       text = convertHtmlToTxt(html);
     }
