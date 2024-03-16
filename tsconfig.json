@@ -2,13 +2,15 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
+    "target": "ES2022",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "outDir": "build",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "resolveJsonModule": true,
     "importHelpers": true,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "paths": {

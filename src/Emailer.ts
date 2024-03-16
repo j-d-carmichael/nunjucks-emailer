@@ -29,6 +29,7 @@ class Emailer {
       html = this.renderTemplate(htmlTpl, emailerRender.tplObject);
     } catch (e) {
       console.error('There was an error rendering the template: ' + htmlTplpath);
+      console.error('The tpl object passed:', emailerRender.tplObject);
       throw e;
     }
 

@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.2
+- tsconfig update -> readable js output
+
 ## 4.1.1
 - Inline css option "url" added as default in case not passed in via options - required field from [inline-css](https://github.com/jonkemp/inline-css)
 
