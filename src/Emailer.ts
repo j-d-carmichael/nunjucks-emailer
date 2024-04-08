@@ -192,14 +192,17 @@ class Emailer {
         await sgMail.send(sendObjectWithGlobals);
         break;
       case EmailerSendTypes.mailchimp:
-        await this.sendViaMailchimp(sendObject);
+        await this.sendViaMandrill(sendObject);
+        break;
+      case EmailerSendTypes.mandrill:
+        await this.sendViaMandrill(sendObject);
         break;
     }
     return sendObjectWithGlobals;
   }
 
-  sendViaMailchimp (sendObject: EmailerSendObject): Promise<any> {
-    const chimp = mailchimp(process.env.MAILCHIMP_API_KEY);
+  sendViaMandrill (sendObject: EmailerSendObject): Promise<any> {
+    const chimp = mailchimp(process.env.MANDRILL_API_KEY || process.env.MAILCHIMP_API_KEY);
     let toEmail: string;
     let toName;
     if (typeof sendObject.to === 'string') {

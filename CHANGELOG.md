@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.0
+- docs: how to inject the sendgrid or the mandrill api keys into this package
+
 ## 4.1.4
 - fix: log and file and return no longer require the fallbackFrom & fallbackSubject
 

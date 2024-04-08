@@ -49,8 +49,13 @@ The `sendType` is important. For development of an app you will probably want to
 
 The send types enum can be found here: [EmailerSendTypes.ts](https://github.com/j-d-carmichael/nunjucks-emailer/blob/master/src/enums/EmailerSendTypes.ts)
 
-
 Lastly, call the [Emailer send method](https://github.com/johndcarmichael/nunjucks-emailer/blob/master/src/Emailer.ts#L9), see below.
+
+## Process env keys
+
+Sendgrid: ensure `process.env.SENDGRID_API_KEY` contains your sendgrid api key.
+Mandrill: ensure `process.env.MANDRILL_API_KEY` contains your mandrill api key.
+
 
 ## Send an email via on file tpl
 ```typescript
