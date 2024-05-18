@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.0
+- feat: nodemailer added, send email via SMTP as required
+
 ## 4.2.0
 - docs: how to inject the sendgrid or the mandrill api keys into this package
 

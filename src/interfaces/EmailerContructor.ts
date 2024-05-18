@@ -7,6 +7,15 @@ interface BaseEmailerConstructor {
   logPath?: string;
   makeCssInline?: boolean;
   makeCssInlineOptions?: InlineCss.Options;
+  nodemailer?: {
+    host: string // ''smtp.ethereal.email',
+    port: number, //587
+    secure: boolean, // Use `true` for port 465, `false` for all other ports
+    auth?: {
+      user: string, // 'maddison53@ethereal.email',
+      pass: string, //'jn7jnAPss4f63QBp6D',
+    },
+  };
   sendType: EmailerSendTypes;
   templateGlobalObject?: any;
   templatePath?: string;

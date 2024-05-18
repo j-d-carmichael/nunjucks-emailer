@@ -11,5 +11,6 @@ export default (emailerConstructor: EmailerConstructor): void => {
     logPath: emailerConstructor.logPath || path.join(process.cwd(), 'email/logs'),
     fallbackFrom: emailerConstructor.fallbackFrom,
     fallbackSubject: emailerConstructor.fallbackSubject,
+    nodemailer: emailerConstructor.nodemailer
   };
 };

@@ -1,5 +1,6 @@
 import path = require('path');
 import fs from 'fs-extra';
+import nodemailer from 'nodemailer';
 import sgMail from '@sendgrid/mail';
 import mailchimp from '@mailchimp/mailchimp_transactional';
 import inlineCss from 'inline-css';
@@ -197,6 +198,9 @@ class Emailer {
       case EmailerSendTypes.mandrill:
         await this.sendViaMandrill(sendObject);
         break;
+      case EmailerSendTypes.nodemailer:
+        await this.sendViaNodemailer(sendObject);
+        break;
     }
     return sendObjectWithGlobals;
   }
@@ -232,6 +236,23 @@ class Emailer {
         text: sendObject.text,
       }
     });
+  }
+
+  async sendViaNodemailer (sendObject: EmailerSendObject) {
+    const transporter = nodemailer
+      .createTransport(global.OPENAPI_NODEGEN_EMAILER_SETTINGS.nodemailer);
+
+    const { from, to } = sendObject;
+
+    const info = await transporter.sendMail({
+      from: (typeof from === 'string') ? from : `"${from.name}" <${from.email}>`,
+      to: (typeof to === 'string') ? to : `"${to.name}" <${to.email}>`,
+      subject: sendObject.subject,
+      text: sendObject.text,
+      html: sendObject.html
+    });
+
+    console.log(`Message sent: ${info.messageId}`);
   }
 
   writeFile (tplRelativePath: string, object: EmailerSendObjectWithGlobals): Promise<string> {
