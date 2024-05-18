@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Change Log](#change-log)
+  - [4.3.0](#430)
+  - [4.2.0](#420)
+  - [4.1.4](#414)
+  - [4.1.3](#413)
+  - [4.1.2](#412)
+  - [4.1.1](#411)
+  - [4.1.0](#410)
+  - [4.0.2](#402)
+  - [4.0.1](#401)
+  - [4.0.0](#400)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Change Log
 All notable changes to this project will be documented in this file.
 

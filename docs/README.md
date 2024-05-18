@@ -1,3 +1,20 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [nunjucks-emailer](#nunjucks-emailer)
+  - [How it works](#how-it-works)
+  - [Setup](#setup)
+  - [Process env keys](#process-env-keys)
+  - [Send to MailHog (dev server)](#send-to-mailhog-dev-server)
+  - [Send an email via on file tpl](#send-an-email-via-on-file-tpl)
+  - [Send an email pre-compiled string](#send-an-email-pre-compiled-string)
+  - [Email Subject](#email-subject)
+  - [Global variables (common dynamic content)](#global-variables-common-dynamic-content)
+  - [Unit test example](#unit-test-example)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # nunjucks-emailer
 
 This package was created explicitly for use with a project that used **Sendgrid** to send emails. It has since been expanded to include a new provider, **MailChimp**. It is not designed as a replacement for nodemailer, it is designed to simplify email templates and sending emials via API. 
@@ -53,9 +70,51 @@ Lastly, call the [Emailer send method](https://github.com/johndcarmichael/nunjuc
 
 ## Process env keys
 
+Sendgrid and mandrill only:
+
 Sendgrid: ensure `process.env.SENDGRID_API_KEY` contains your sendgrid api key.
 Mandrill: ensure `process.env.MANDRILL_API_KEY` contains your mandrill api key.
 
+## Send to MailHog (dev server)
+https://github.com/mailhog/MailHog
+
+Setup in a docker compose file:
+```
+  # STANDARD: Mailhog for dev email purposes
+  mailhog:
+    container_name: pf-mailhog
+    image: mailhog/mailhog
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+    networks:
+      - shared_network
+```
+
+Connect and send to it via nunjucks emailer:
+```
+  await emailerSetupAsync({
+    nodemailer: {
+      port: 1025,
+      host: 'mailhog',
+      secure: false
+      // note the auth object is left off
+    }
+    ... add the other config options ...
+  });
+  
+  // Send the object as normal, this package will auto-convert html emails to txt emails
+  NunjucksEmailer.send({
+    from: 'john@john.com',
+    subject: 'Test emailer',
+    to: 'bob@john.com',
+    tplHtmlString: '<p>Hello World</p>'
+  });
+```
 
 ## Send an email via on file tpl
 ```typescript
@@ -160,7 +219,7 @@ You can reach us at {{ contactUsEmail }} or call us on {{ telephoneNumber }}
 The global object is also logged and returned from the dens function.
 
 
-## Unit test example
+## Unit test your emails, example
 
 Check the source code of this package: [src/__tests__/Emailer.spec.ts](https://github.com/johndcarmichael/nunjucks-emailer/blob/master/src/__tests__/Emailer.ts)
 
