@@ -9,7 +9,7 @@
     "outDir": "build",
     "baseUrl": "./",
     "resolveJsonModule": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
