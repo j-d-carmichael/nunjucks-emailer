@@ -11,7 +11,7 @@
   - [Send an email pre-compiled string](#send-an-email-pre-compiled-string)
   - [Email Subject](#email-subject)
   - [Global variables (common dynamic content)](#global-variables-common-dynamic-content)
-  - [Unit test example](#unit-test-example)
+  - [Unit test your emails, example](#unit-test-your-emails-example)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

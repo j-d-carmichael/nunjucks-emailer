@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 export default (htmlString: string): string | undefined => {
   const $ = cheerio.load(htmlString);

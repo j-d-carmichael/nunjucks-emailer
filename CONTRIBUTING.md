@@ -1,3 +1,16 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Contributing to Nunjucks Emailer](#contributing-to-nunjucks-emailer)
+  - [How to Contribute](#how-to-contribute)
+  - [Code of Conduct](#code-of-conduct)
+  - [Reporting Issues](#reporting-issues)
+  - [Getting Help](#getting-help)
+  - [Coding Guidelines](#coding-guidelines)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Contributing to Nunjucks Emailer
 
 Thank you for considering contributing to Nunjucks Emailer! We welcome all kinds of contributions.
