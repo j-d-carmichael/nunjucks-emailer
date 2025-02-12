@@ -19,6 +19,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.4.0
+- feat: log output containing connection type, useful for when switching between smpt servers and log mode in docker setups.
+
 ## 4.3.0
 - feat: nodemailer added, send email via SMTP as required
 

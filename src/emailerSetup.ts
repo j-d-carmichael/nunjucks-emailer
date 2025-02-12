@@ -13,4 +13,9 @@ export default (emailerConstructor: EmailerConstructor): void => {
     fallbackSubject: emailerConstructor.fallbackSubject,
     nodemailer: emailerConstructor.nodemailer
   };
+  if (emailerConstructor.nodemailer && emailerConstructor.nodemailer.host) {
+    console.log(`NUNJUCKS-EMAILER: Setup with sendType ${emailerConstructor.sendType} & nodemailer host ${emailerConstructor.nodemailer.host}`);
+  } else {
+    console.log(`NUNJUCKS-EMAILER: Setup with sendType ${emailerConstructor.sendType}`);
+  }
 };
