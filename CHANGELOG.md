@@ -3,6 +3,7 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Change Log](#change-log)
+  - [5.0.0](#500)
   - [4.4.0](#440)
   - [4.3.0](#430)
   - [4.2.0](#420)
@@ -19,6 +20,10 @@
 
 # Change Log
 All notable changes to this project will be documented in this file.
+
+## 5.0.0
+- feat: Nodemailer update from v6 to v7
+- chore: more unit test coverage added
 
 ## 4.4.0
 - feat: log output containing connection type, useful for when switching between smpt servers and log mode in docker setups.

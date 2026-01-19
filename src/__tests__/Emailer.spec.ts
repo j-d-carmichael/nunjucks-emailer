@@ -4,6 +4,9 @@ import { Emailer, emailerSetupAsync, emailerSetupSync } from '@/index';
 import fs from 'fs-extra';
 import emailerSetup from '@/emailerSetup';
 import getSubjectFromHtml from '@/utils/getSubjectFromHtml';
+import nodemailer from 'nodemailer';
+
+jest.mock('nodemailer');
 
 const logPath = path.join(process.cwd(), 'src/__tests__/log');
 const to = 'john@john.com';
@@ -251,5 +254,130 @@ it('should console error as no api key set', (done) => {
     done('should have thrown error as sendgrid not setup');
   }).catch(() => {
     done();
+  });
+});
+
+describe('sendViaNodemailer', () => {
+  const mockSendMail = jest.fn();
+  const mockCreateTransport = nodemailer.createTransport as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCreateTransport.mockReturnValue({
+      sendMail: mockSendMail,
+    });
+    mockSendMail.mockResolvedValue({ messageId: 'test-message-id-123' });
+  });
+
+  it('should send email via nodemailer with string addresses', async () => {
+    emailerSetupSync({
+      sendType: EmailerSendTypes.nodemailer,
+      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+      logPath: logPath,
+      fallbackFrom,
+      fallbackSubject,
+      templateGlobalObject,
+      nodemailer: {
+        host: 'smtp.test.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'testuser',
+          pass: 'testpass',
+        },
+      },
+    });
+
+    await Emailer.send({ to, from, subject, tplObject, tplRelativePath });
+
+    expect(mockCreateTransport).toHaveBeenCalledWith({
+      host: 'smtp.test.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'testuser',
+        pass: 'testpass',
+      },
+    });
+    expect(mockSendMail).toHaveBeenCalledTimes(1);
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: from,
+        to: to,
+        subject: subject,
+      }),
+    );
+  });
+
+  it('should send email via nodemailer with object addresses', async () => {
+    const toObj = { name: 'John Doe', email: 'john@john.com' };
+    const fromObj = { name: 'Bob Smith', email: 'bob@bob.com' };
+
+    emailerSetupSync({
+      sendType: EmailerSendTypes.nodemailer,
+      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+      logPath: logPath,
+      fallbackFrom,
+      fallbackSubject,
+      templateGlobalObject,
+      nodemailer: {
+        host: 'smtp.test.com',
+        port: 465,
+        secure: true,
+      },
+    });
+
+    await Emailer.send({ to: toObj, from: fromObj, subject, tplObject, tplRelativePath });
+
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: '"Bob Smith" <bob@bob.com>',
+        to: '"John Doe" <john@john.com>',
+        subject: subject,
+      }),
+    );
+  });
+
+  it('should include html and text in nodemailer send', async () => {
+    emailerSetupSync({
+      sendType: EmailerSendTypes.nodemailer,
+      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+      logPath: logPath,
+      fallbackFrom,
+      fallbackSubject,
+      templateGlobalObject,
+      nodemailer: {
+        host: 'smtp.test.com',
+        port: 587,
+        secure: false,
+      },
+    });
+
+    await Emailer.send({ to, from, subject, tplObject, tplRelativePath });
+
+    const sendMailCall = mockSendMail.mock.calls[0][0];
+    expect(sendMailCall.html).toContain('Welcome John');
+    expect(sendMailCall.text).toContain('Welcome John');
+  });
+
+  it('should throw error when nodemailer sendMail fails', async () => {
+    mockSendMail.mockRejectedValue(new Error('SMTP connection failed'));
+
+    emailerSetupSync({
+      sendType: EmailerSendTypes.nodemailer,
+      templatePath: path.join(process.cwd(), 'src/__tests__/templates'),
+      logPath: logPath,
+      fallbackFrom,
+      fallbackSubject,
+      templateGlobalObject,
+      nodemailer: {
+        host: 'smtp.invalid.com',
+        port: 587,
+        secure: false,
+      },
+    });
+
+    await expect(Emailer.send({ to, from, subject, tplObject, tplRelativePath }))
+      .rejects.toThrow('SMTP connection failed');
   });
 });
