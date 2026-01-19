@@ -5,6 +5,7 @@ module.exports = {
   // Which files to not lint
   ignorePatterns: [
     'node_modules',
+    '__tests__'
   ],
 
   parserOptions: {
